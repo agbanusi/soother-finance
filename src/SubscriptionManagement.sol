@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.22;
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SubscriptionManagement {
-    address public owner;
+contract SubscriptionManagement is Ownable {
     uint256 public constant ONE_YEAR = 31536000; // One year in seconds
 
     // Mapping: oracle address => subscriber address => subscription expiry timestamp.
@@ -14,13 +14,7 @@ contract SubscriptionManagement {
     event SubscriptionPurchased(address indexed subscriber, address indexed oracle, uint256 expiryTime);
     event SubscriptionPriceSet(address indexed oracle, uint256 price);
 
-    constructor() {
-        owner = msg.sender;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Unauthorized");
-        _;
+    constructor() Ownable(msg.sender) {
     }
 
     /**
@@ -54,6 +48,10 @@ contract SubscriptionManagement {
             currentExpiry = block.timestamp;
         }
         subscriptions[oracle][msg.sender] = currentExpiry + _duration;
+
+        if(msg.value > price){
+            address(msg.sender).call{value: msg.value - price -1}(""); //subtract 1 wei for finxing rounding edge case
+        }
         emit SubscriptionPurchased(msg.sender, oracle, subscriptions[oracle][msg.sender]);
     }
 
@@ -71,6 +69,6 @@ contract SubscriptionManagement {
      * @notice Withdraw collected funds.
      */
     function withdraw() external onlyOwner {
-        payable(owner).transfer(address(this).balance);
+        payable(owner()).call{value:address(this).balance}("");
     }
 }
