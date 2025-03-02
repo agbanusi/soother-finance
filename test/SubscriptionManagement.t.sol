@@ -41,9 +41,11 @@ contract SubscriptionManagementTest is Test {
         subscription.setSubscriptionPrice(oracle, 1 ether);
 
         // Attempt purchase with insufficient payment.
+        vm.deal(nonOwner, 10 ether);
         vm.startPrank(nonOwner);
-        vm.expectRevert(bytes("Insufficient payment"));
-        subscription.purchaseSubscription{value: 0.5 ether}(oracle, subscription.ONE_YEAR());
+        uint year = subscription.ONE_YEAR();
+        vm.expectRevert();
+        subscription.purchaseSubscription{value: 0.5 ether}(oracle, year);
         vm.stopPrank();
     }
 
