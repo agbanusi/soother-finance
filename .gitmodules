@@ -1,3 +1,7 @@
 [submodule "lib/Openzeppelin-contracts"]
 	path = lib/Openzeppelin-contracts
 	url = https://github.com/Openzeppelin/Openzeppelin-contracts
+
+[submodule "soother-backend"]
+	path = soother-backend
+	url = https://github.com/agbanusi/soother-backend
