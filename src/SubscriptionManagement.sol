@@ -50,7 +50,8 @@ contract SubscriptionManagement is Ownable {
         subscriptions[oracle][msg.sender] = currentExpiry + _duration;
 
         if(msg.value > price){
-            address(msg.sender).call{value: msg.value - price -1}(""); //subtract 1 wei for finxing rounding edge case
+            (bool success, ) = address(msg.sender).call{value: msg.value - price}("");
+            require(success, "Refund failed");
         }
         emit SubscriptionPurchased(msg.sender, oracle, subscriptions[oracle][msg.sender]);
     }
@@ -69,6 +70,7 @@ contract SubscriptionManagement is Ownable {
      * @notice Withdraw collected funds.
      */
     function withdraw() external onlyOwner {
-        payable(owner()).call{value:address(this).balance}("");
+        (bool success, ) = payable(owner()).call{value:address(this).balance}("");
+        require(success, "Withdrawal failed");
     }
 }
